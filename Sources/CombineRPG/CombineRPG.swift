@@ -24,11 +24,11 @@ class Starter:Publisher {
     }
     typealias Output = String
     typealias Failure = Never
+    let value = "hello world"
     func receive<AnySubscriber>(subscriber: AnySubscriber)
-    
     where AnySubscriber : Subscriber, Failure == AnySubscriber.Failure, Output == AnySubscriber.Input {
         Swift.print(Self.self, "\t", #function)
-        let sub = Listener(downStream: subscriber, value: "hello world")
+        let sub = Listener(downStreamSubscriber: subscriber, value: value)
         subscriber.receive(subscription: sub)
         
     }
@@ -36,23 +36,23 @@ class Starter:Publisher {
         Swift.print(Self.self, "\t", #function)
     }
 }
-class Mapper<Upstream>: Publisher where Upstream:Publisher, Upstream.Output == String, Upstream.Failure == Never {
-    internal init(upstream: Upstream) {
-        self.upstream = upstream
+class Mapper<UpstreamPublisher>: Publisher where UpstreamPublisher:Publisher, UpstreamPublisher.Output == String, UpstreamPublisher.Failure == Never {
+    internal init(upstream: UpstreamPublisher) {
+        self.upstreamPublisher = upstream
     }
     
     typealias Output = String
     typealias Failure = Never
-    let upstream: Upstream
+    let upstreamPublisher: UpstreamPublisher
     func receive<S>(subscriber: S) where S : Subscriber, Failure == S.Failure, Output == S.Input {
         
-        upstream.receive(subscriber: MapperListener(downStream: subscriber))
+        upstreamPublisher.receive(subscriber: MapperSubscriber(downStream: subscriber))
     }
     deinit {
         Swift.print(Self.self, "\t", #function)
     }
 }
-class MapperListener<DownStream>: Subscriber where DownStream: Subscriber, DownStream.Input == String, DownStream.Failure == Never {
+class MapperSubscriber<DownStream>: Subscriber where DownStream: Subscriber, DownStream.Input == String, DownStream.Failure == Never {
     func receive(subscription: Subscription) {
         downStream.receive(subscription: subscription)
     }
@@ -79,9 +79,9 @@ class MapperListener<DownStream>: Subscriber where DownStream: Subscriber, DownS
         }
 }
 class Listener<DownStream>: Subscription where DownStream: Subscriber, DownStream.Input == String {
-    internal init(downStream: DownStream? = nil, value: String) {
+    internal init(downStreamSubscriber: DownStream? = nil, value: String) {
         print(Self.self, "\t", #function)
-        self.downStream = downStream
+        self.downStream = downStreamSubscriber
         self.value = value
     }
     

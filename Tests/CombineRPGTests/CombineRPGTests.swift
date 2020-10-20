@@ -30,5 +30,33 @@ final class CombineRPGTests: XCTestCase {
         mapper = nil
         print(#line)
     }
-    
+    /**
+     Starter      init()
+     Finisher      init()
+     Listener<MapperSubscriber<Finisher>>      init(downStreamSubscriber:value:)
+     Starter      deinit
+     Listener<MapperSubscriber<Finisher>>      request(_:)
+     Finisher      receive(_:)
+     hello world by yu
+     Finisher      receive(completion:)
+     Listener<MapperSubscriber<Finisher>>      cancel()
+     Listener<MapperSubscriber<Finisher>>      deinit
+     MapperSubscriber<Finisher>      deinit
+     Finisher      deinit
+     44
+     */
+    func test_listener_Start() throws {
+        var starter:Starter! = Starter()
+        
+        var finisher:Finisher! = Finisher()
+        var mappedFinisher:MapperSubscriber! = MapperSubscriber(downStream: finisher!)
+        var listener:Listener! = Listener(downStreamSubscriber: mappedFinisher, value: starter!.value)
+        mappedFinisher = nil
+        starter = nil
+        finisher = nil
+        listener.request(.max(1))
+        listener = nil
+        print(#line)
+    }
+
 }
